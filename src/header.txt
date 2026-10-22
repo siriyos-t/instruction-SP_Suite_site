@@ -1,0 +1,11 @@
+// ==UserScript==
+// @name         Bplus SP Suite — All-in-One Support Tools
+// @namespace    https://cloudbplusai.bplus.co.th/
+// @version      __VERSION__
+// @description  รวม 9 เครื่องมือ Support (SLA Hub, Overdue, คืน BOT, QA Repair + ตัวช่วย 5 ตัว) เป็นแถบเดียวบน header — ตั้งค่าตามแผนก ERP / HRM / SE และเลือกธีมสีได้
+// @author       Nueng (ERP Support) & Claude
+// @match        https://cloudbplusai.bplus.co.th/*
+// @match        https://appbplusai.bplus.co.th/*
+// @grant        none
+// @run-at       document-start
+// ==/UserScript==

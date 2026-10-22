@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SP Suite — คู่มือติดตั้งและใช้งาน</title>
+<meta name="description" content="คู่มือติดตั้ง Tampermonkey และสคริปต์ SP Suite สำหรับทีม Support Bplus บน cloudbplusai พร้อมวิธีใช้ทุกเครื่องมือ แยก Helpdesk และหัวหน้า">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@500;600&family=Anuphan:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#13233F;      /* น้ำเงินหมึก — สีเดียวกับแถบข้างของ cloudbplusai */
+  --ink-2:#4A5872;
+  --ink-3:#6B7891;
+  --paper:#F3F5F8;
+  --card:#FFFFFF;
+  --rule:#DCE1EA;
+  --lime:#C6F432;     /* สีแถบ SP */
+  --dock:#0E0E10;
+  --sla:#0E8FC2; --ovd:#E2483A; --bot:#C77A0A; --qa:#C0279F;
+  --sla-dot:#4FD1FF; --ovd-dot:#FF6B5B; --bot-dot:#FFB547; --qa-dot:#F472D0;
+  --ok:#0F8A5F;
+  --radius-lg:22px; --radius:14px; --radius-sm:9px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Anuphan','Leelawadee UI',system-ui,sans-serif;font-size:16.5px;line-height:1.7;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Mitr','Anuphan',sans-serif;font-weight:600;line-height:1.25;margin:0}
+p{margin:0 0 .8em}
+a{color:var(--ink);text-decoration-thickness:1.5px;text-underline-offset:3px}
+a:hover{color:var(--sla)}
+:focus-visible{outline:3px solid var(--sla);outline-offset:3px;border-radius:6px}
+kbd{font-family:inherit;font-size:.85em;font-weight:600;background:var(--card);border:1px solid var(--rule);border-bottom-width:3px;border-radius:6px;padding:1px 7px;white-space:nowrap}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:0;z-index:20;background:rgba(243,245,248,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--rule)}
+.top .wrap{display:flex;align-items:center;gap:18px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-family:'Mitr',sans-serif;font-weight:600;font-size:17px;text-decoration:none;white-space:nowrap}
+.brand b{display:inline-flex;align-items:center;justify-content:center;height:30px;padding:0 9px;border-radius:8px;background:var(--lime);color:#0A0A0B;font-size:13px;letter-spacing:.04em}
+.nav{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.nav a{padding:7px 12px;border-radius:999px;text-decoration:none;font-size:14.5px;font-weight:600;color:var(--ink-2);white-space:nowrap}
+.nav a:hover,.nav a.on{background:var(--card);color:var(--ink);box-shadow:0 0 0 1px var(--rule)}
+
+/* ---------- hero ---------- */
+.hero{padding:64px 0 40px}
+.hero h1{font-size:clamp(32px,5vw,56px);max-width:24ch;letter-spacing:-.01em}
+.hero .lead{font-size:clamp(17px,2vw,19.5px);color:var(--ink-2);max-width:60ch;margin-top:18px}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 20px;border-radius:12px;border:0;font:inherit;font-weight:700;font-size:15.5px;cursor:pointer;text-decoration:none}
+.btn-main{background:var(--ink);color:#fff}
+.btn-main:hover{background:#1d335c;color:#fff}
+.btn-ghost{background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--rule)}
+.btn-ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink-3);color:var(--ink)}
+
+/* the browser stage with a live dock */
+.stage{margin-top:44px;background:var(--card);border-radius:var(--radius-lg);box-shadow:0 1px 0 var(--rule),0 30px 60px -36px rgba(19,35,63,.45);overflow:hidden;border:1px solid var(--rule)}
+.stage-bar{display:flex;align-items:center;gap:14px;height:62px;padding:0 16px;border-bottom:1px solid var(--rule);background:#fff;overflow-x:auto;scrollbar-width:thin}
+.fake-search{flex:0 1 300px;min-width:150px;height:36px;border:1px solid var(--rule);border-radius:9px;display:flex;align-items:center;padding:0 12px;color:var(--ink-3);font-size:14px;white-space:nowrap;overflow:hidden}
+.dock{display:inline-flex;align-items:center;gap:3px;height:46px;padding:4px;margin-left:auto;background:#fff;border:1px solid #18181B;border-radius:14px;box-shadow:0 0 0 3px rgba(198,244,50,.55);flex:none}
+.dock button{position:relative;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 11px;border:0;border-radius:10px;background:transparent;color:#18181B;font:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.dock button:hover{background:#F1F0EA}
+.dock .sp{background:var(--lime);font-weight:700;letter-spacing:.03em}
+.dock .sp:hover{background:#b6e624}
+.dock .dot{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.dock .bdg{min-width:20px;height:20px;padding:0 5px;border-radius:6px;background:var(--c);color:#0A0A0B;font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.dock button[aria-pressed="true"]{background:var(--c);color:#0A0A0B}
+.dock button[aria-pressed="true"] .dot{background:#0A0A0B}
+.dock .sp[aria-pressed="true"]{box-shadow:0 0 0 2px #fff,0 0 0 4px #18181B}
+.dock .sep{width:1px;height:22px;background:#18181B;opacity:.25;margin:0 2px}
+.dock .ic{width:36px;padding:0;justify-content:center;color:#52525B}
+.dock .ic svg{width:17px;height:17px}
+.stage-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:0;min-height:330px}
+.stage-page{padding:22px 24px;color:var(--ink-3);font-size:14px;border-right:1px solid var(--rule);background:linear-gradient(#fff,#fafbfc)}
+.ghost-line{height:11px;border-radius:6px;background:#EEF1F5;margin:10px 0}
+.ghost-card{border:1px solid #EEF1F5;border-radius:12px;padding:12px;margin-top:14px}
+.drawer{padding:22px 24px;border-top:4px solid var(--c,var(--lime));background:#fff;display:flex;flex-direction:column;gap:10px}
+.drawer h3{font-size:21px}
+.drawer .who{display:inline-flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;font-size:13px;font-weight:600;background:var(--paper);color:var(--ink-2)}
+.chip.lead{background:#E8F0FF;color:#1E3A8A}
+.chip.hd{background:#E9F8EF;color:#0F5F43}
+.drawer ul{margin:4px 0 0;padding-left:20px;color:var(--ink-2)}
+.drawer li{margin:3px 0}
+.drawer .go{margin-top:auto;font-weight:700}
+.stage-hint{font-size:14px;color:var(--ink-3);padding:12px 16px;border-top:1px solid var(--rule);background:#fbfcfd}
+
+/* ---------- sections ---------- */
+section.part{padding:72px 0 24px}
+.part-head{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;max-width:760px;margin-bottom:30px}
+.part-head h2{font-size:clamp(28px,3.6vw,40px)}
+.part-head p{color:var(--ink-2);font-size:17.5px}
+.part-num{font-family:'Mitr',sans-serif;font-size:15px;color:var(--ink-3)}
+
+/* install stepper */
+.install{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:28px;align-items:start}
+.progress{position:sticky;top:90px;background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);padding:18px}
+.progress h3{font-size:17px;margin-bottom:12px}
+.meter{height:10px;border-radius:6px;background:var(--paper);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--ok);border-radius:6px;transition:width .35s ease}
+.progress .count{font-size:14px;color:var(--ink-2);margin-top:8px}
+.progress ol{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:2px}
+.progress li a{display:flex;gap:10px;align-items:center;padding:7px 8px;border-radius:8px;text-decoration:none;font-size:14.5px;color:var(--ink-2)}
+.progress li a:hover{background:var(--paper)}
+.progress li .tick{width:20px;height:20px;border-radius:50%;border:2px solid var(--rule);flex:none;display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:#fff}
+.progress li.done .tick{background:var(--ok);border-color:var(--ok)}
+.progress li.done a{color:var(--ink)}
+.steps{display:flex;flex-direction:column;gap:16px;counter-reset:step}
+.step{background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);padding:22px 24px;display:grid;grid-template-columns:44px minmax(0,1fr);gap:4px 16px}
+.step.done{border-color:#A7DCC4;background:#FBFEFC}
+.step-n{grid-row:1/span 3;width:44px;height:44px;border-radius:12px;background:var(--paper);display:flex;align-items:center;justify-content:center;font-family:'Mitr',sans-serif;font-size:20px;color:var(--ink)}
+.step.done .step-n{background:var(--ok);color:#fff}
+.step h3{font-size:20px;align-self:center}
+.step-body{color:var(--ink-2)}
+.step-body ol,.step-body ul{margin:6px 0 10px;padding-left:22px}
+.step-body li{margin:4px 0}
+.step-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px}
+.check{display:inline-flex;align-items:center;gap:9px;min-height:40px;padding:0 14px;border-radius:10px;background:var(--paper);font-weight:600;font-size:14.5px;cursor:pointer;user-select:none}
+.check input{width:18px;height:18px;accent-color:var(--ok);margin:0}
+.note{border-left:4px solid var(--bot);background:#FFF8EC;padding:10px 14px;border-radius:0 10px 10px 0;color:#5B3A06;font-size:15px;margin:10px 0}
+.note.info{border-color:var(--sla);background:#EEF8FD;color:#0B3D55}
+.tabs-browser{display:inline-flex;background:var(--paper);border-radius:10px;padding:3px;gap:2px;margin:4px 0 8px}
+.tabs-browser button{border:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--ink-2);padding:6px 14px;border-radius:8px;cursor:pointer}
+.tabs-browser button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(19,35,63,.12)}
+
+/* role switch */
+.roles{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:26px}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:4px;gap:2px}
+.seg button{border:0;background:transparent;font:inherit;font-weight:700;font-size:15px;color:var(--ink-2);padding:9px 18px;border-radius:10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.roles .hint{color:var(--ink-3);font-size:14.5px}
+
+/* tools */
+.tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.tool{background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+.tool[hidden]{display:none}
+.tool-top{display:flex;align-items:center;gap:12px;padding:18px 20px 0}
+.tool-top .sw{width:14px;height:14px;border-radius:50%;background:var(--c);flex:none;box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 18%,transparent)}
+.tool-top h3{font-size:20px;flex:1}
+.tool-where{padding:4px 20px 0;color:var(--ink-3);font-size:14px}
+.tool-body{padding:10px 20px 4px;color:var(--ink-2)}
+.tool-body ul{margin:0;padding-left:20px}
+.tool-body li{margin:4px 0}
+details.how{border-top:1px solid var(--rule);margin-top:auto}
+details.how summary{list-style:none;cursor:pointer;padding:13px 20px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:10px}
+details.how summary::-webkit-details-marker{display:none}
+details.how summary::after{content:"";width:9px;height:9px;border-right:2px solid var(--ink-2);border-bottom:2px solid var(--ink-2);transform:rotate(45deg);transition:transform .2s;margin-right:4px}
+details.how[open] summary::after{transform:rotate(-135deg)}
+details.how .in{padding:0 20px 18px;color:var(--ink-2)}
+details.how ol{margin:0;padding-left:22px}
+details.how li{margin:5px 0}
+.tool.wide{grid-column:1/-1}
+.tag-on-site{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#fff;background:#16a34a;border-radius:6px;padding:2px 8px 2px 3px;vertical-align:middle}
+.tag-on-site i{font-style:normal;background:#fff;color:#16a34a;border-radius:4px;padding:0 4px;font-size:10.5px}
+
+/* day timeline */
+.day{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);overflow:hidden}
+.slot{padding:20px 18px;border-right:1px solid var(--rule);position:relative}
+.slot:last-child{border-right:0}
+.slot .time{font-family:'Mitr',sans-serif;font-size:26px;line-height:1}
+.slot .when{color:var(--ink-3);font-size:14px;margin:4px 0 12px}
+.slot ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.slot li{display:flex;gap:9px;align-items:flex-start;font-size:15px;color:var(--ink-2)}
+.slot li .d{width:8px;height:8px;border-radius:50%;background:var(--c);margin-top:9px;flex:none}
+.slot li[hidden]{display:none}
+.slot::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--bar)}
+
+/* settings */
+.set-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);padding:22px 24px}
+.panel h3{font-size:19px;margin-bottom:10px}
+.dept-pick{display:flex;gap:8px;margin:6px 0 14px;flex-wrap:wrap}
+.dept-pick button{border:1.5px solid var(--rule);background:#fff;border-radius:12px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer;color:var(--ink);min-width:86px;text-align:left;line-height:1.3}
+.dept-pick button small{display:block;font-weight:500;color:var(--ink-3);font-size:12.5px}
+.dept-pick button[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 3px rgba(19,35,63,.12)}
+table.kv{width:100%;border-collapse:collapse;font-size:15px}
+table.kv th,table.kv td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--rule);vertical-align:top}
+table.kv th{color:var(--ink-3);font-weight:600;width:46%}
+table.kv td{font-weight:600}
+.swatches{display:flex;gap:8px;margin:8px 0 2px}
+.swatches span{width:30px;height:30px;border-radius:9px;border:1px solid rgba(0,0,0,.08)}
+.list-plain{margin:0;padding-left:20px;color:var(--ink-2)}
+.list-plain li{margin:6px 0}
+
+/* faq */
+.faq{display:flex;flex-direction:column;gap:10px;max-width:860px}
+.faq details{background:var(--card);border:1px solid var(--rule);border-radius:var(--radius)}
+.faq summary{list-style:none;cursor:pointer;padding:16px 20px;font-weight:700;font-size:16.5px;display:flex;justify-content:space-between;gap:12px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-family:'Mitr',sans-serif;font-size:22px;line-height:1;color:var(--ink-3)}
+.faq details[open] summary::after{content:"–"}
+.faq .in{padding:0 20px 18px;color:var(--ink-2)}
+
+footer{margin-top:80px;padding:34px 0 46px;border-top:1px solid var(--rule);color:var(--ink-3);font-size:14.5px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between}
+
+[data-for][hidden]{display:none!important}
+
+@media (max-width:900px){
+  .install{grid-template-columns:minmax(0,1fr)}
+  .progress{position:static}
+  .tools{grid-template-columns:minmax(0,1fr)}
+  .day{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .slot:nth-child(2){border-right:0}
+  .slot:nth-child(-n+2){border-bottom:1px solid var(--rule)}
+  .set-grid{grid-template-columns:minmax(0,1fr)}
+  .stage-body{grid-template-columns:minmax(0,1fr)}
+  .stage-page{display:none}
+}
+@media (max-width:640px){
+  body{font-size:16px}
+  .top .wrap{height:58px}
+  .brand span{display:none}
+  .hero{padding:40px 0 24px}
+  .day{grid-template-columns:minmax(0,1fr)}
+  .slot{border-right:0;border-bottom:1px solid var(--rule)}
+  .slot:last-child{border-bottom:0}
+  .step{grid-template-columns:minmax(0,1fr);padding:18px}
+  .step-n{grid-row:auto;width:38px;height:38px;font-size:17px}
+  .dock .lbl{display:none}
+  .fake-search{display:none}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.meter i{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top"><b>SP</b><span>SP Suite คู่มือ</span></a>
+    <nav class="nav" aria-label="สารบัญ">
+      <a href="#install">ติดตั้ง</a>
+      <a href="#tools">เครื่องมือ</a>
+      <a href="#day">ใช้ประจำวัน</a>
+      <a href="#settings">ตั้งค่า</a>
+      <a href="#faq">แก้ปัญหา</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <h1>เครื่องมือทีม Support ที่อยู่บนแถบเดียวกับ cloudbplusai</h1>
+      <p class="lead">SP Suite รวมสคริปต์ช่วยงาน 9 ตัวเป็นแถบเครื่องมือแถบเดียวบนหัวเว็บ ใช้สรุปงานคิว LINE ทวงงานค้าง คืนคิวให้ Bot ซ่อมบทความ QA และช่วยงานหน้าคิวอีกหลายอย่าง ติดตั้งครั้งเดียวผ่าน Tampermonkey</p>
+      <div class="hero-actions">
+        <a class="btn btn-main" href="#install">เริ่มติดตั้ง</a>
+        <a class="btn btn-ghost" href="#tools">ดูว่าทำอะไรได้บ้าง</a>
+      </div>
+
+      <div class="stage" aria-label="ตัวอย่างแถบเครื่องมือ ลองกดได้">
+        <div class="stage-bar">
+          <div class="fake-search">ค้นหา article, ลูกค้า, action item...</div>
+          <div class="dock" role="toolbar" aria-label="แถบ SP Suite (ตัวอย่าง)">
+            <button type="button" class="sp" data-demo="home" aria-pressed="false" style="--c:var(--lime)">SP·ERP</button>
+            <span class="sep" aria-hidden="true"></span>
+            <button type="button" data-demo="sla" aria-pressed="false" style="--c:var(--sla-dot)"><span class="dot"></span><span class="lbl">สรุป SLA</span></button>
+            <button type="button" data-demo="overdue" aria-pressed="false" style="--c:var(--ovd-dot)"><span class="dot"></span><span class="lbl">Overdue</span><span class="bdg">12</span></button>
+            <button type="button" data-demo="bot" aria-pressed="false" style="--c:var(--bot-dot)"><span class="dot"></span><span class="lbl">คืน BOT</span></button>
+            <button type="button" data-demo="qa" aria-pressed="false" style="--c:var(--qa-dot)"><span class="dot"></span><span class="lbl">QA Repair</span><span class="bdg">1</span></button>
+            <span class="sep" aria-hidden="true"></span>
+            <button type="button" class="ic" data-demo="theme" aria-pressed="false" aria-label="สลับธีม" style="--c:#E4E4E7"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+            <button type="button" class="ic" data-demo="settings" aria-pressed="false" aria-label="ตั้งค่า" style="--c:#E4E4E7"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
+          </div>
+        </div>
+        <div class="stage-body">
+          <div class="stage-page" aria-hidden="true">
+            <div style="font-family:Mitr,Anuphan,sans-serif;font-size:20px;color:var(--ink)">Handoff Queue</div>
+            <div class="ghost-line" style="width:70%"></div>
+            <div class="ghost-card">
+              <div style="display:flex;gap:8px;align-items:center"><span class="tag-on-site"><i>SP</i>ดึงชื่อไลน์ &amp; บริษัท</span></div>
+              <div class="ghost-line" style="width:90%"></div>
+              <div class="ghost-line" style="width:60%"></div>
+            </div>
+            <div class="ghost-card"><div class="ghost-line" style="width:80%"></div><div class="ghost-line" style="width:40%"></div></div>
+          </div>
+          <div class="drawer" id="demo-drawer" aria-live="polite"></div>
+        </div>
+        <div class="stage-hint">ลองกดปุ่มบนแถบด้านบน — ของจริงหน้าตาแบบนี้ และอยู่ข้างช่องค้นหาของเว็บ</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PART 1: INSTALL -->
+  <section class="part" id="install">
+    <div class="wrap">
+      <div class="part-head">
+        <div class="part-num">ส่วนที่ 1</div>
+        <h2>ติดตั้ง Tampermonkey และสคริปต์</h2>
+        <p>ทำครั้งเดียวต่อเครื่อง ใช้เวลาราว 5 นาที ติ๊กแต่ละขั้นเมื่อทำเสร็จ หน้านี้จะจำไว้ให้</p>
+      </div>
+
+      <div class="install">
+        <aside class="progress" aria-label="ความคืบหน้า">
+          <h3>ความคืบหน้า</h3>
+          <div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" aria-label="ขั้นที่ทำเสร็จ"><i id="meter-fill"></i></div>
+          <div class="count" id="meter-text">ยังไม่ได้เริ่ม</div>
+          <ol id="mini-steps"></ol>
+        </aside>
+
+        <div class="steps">
+          <article class="step" id="s1" data-step>
+            <div class="step-n">1</div>
+            <h3>ติดตั้งส่วนขยาย Tampermonkey</h3>
+            <div class="step-body">
+              <div class="tabs-browser" role="tablist" aria-label="เลือกเบราว์เซอร์">
+                <button type="button" role="tab" aria-selected="true" data-browser="chrome">Chrome</button>
+                <button type="button" role="tab" aria-selected="false" data-browser="edge">Edge</button>
+              </div>
+              <div data-browser-panel="chrome">
+                <ol>
+                  <li>เปิด <a href="https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo" target="_blank" rel="noopener">Tampermonkey ใน Chrome Web Store</a></li>
+                  <li>กด <b>เพิ่มใน Chrome</b> แล้วกด <b>เพิ่มส่วนขยาย</b></li>
+                  <li>กดไอคอนจิ๊กซอว์มุมขวาบน แล้วกดหมุด Tampermonkey ให้ไอคอนโชว์บนแถบ</li>
+                </ol>
+              </div>
+              <div data-browser-panel="edge" hidden>
+                <ol>
+                  <li>เปิด <a href="https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd" target="_blank" rel="noopener">Tampermonkey ใน Edge Add-ons</a></li>
+                  <li>กด <b>รับ</b> แล้วกด <b>เพิ่มส่วนขยาย</b></li>
+                  <li>กดไอคอนจิ๊กซอว์ แล้วเปิดตา (แสดงในแถบเครื่องมือ) ให้ Tampermonkey</li>
+                </ol>
+              </div>
+            </div>
+            <div class="step-foot"><label class="check"><input type="checkbox" data-done="s1"> ทำแล้ว</label></div>
+          </article>
+
+          <article class="step" id="s2" data-step>
+            <div class="step-n">2</div>
+            <h3>อนุญาตให้รันสคริปต์ของผู้ใช้</h3>
+            <div class="step-body">
+              <p>เบราว์เซอร์รุ่นใหม่ต้องเปิดสิทธิ์นี้ก่อน ไม่อย่างนั้นสคริปต์ทั้งหมดจะไม่ทำงาน</p>
+              <ol>
+                <li>คลิกขวาที่ไอคอน Tampermonkey › <b>จัดการส่วนขยาย</b> (Manage extension)</li>
+                <li>เปิดสวิตช์ <b>อนุญาตสคริปต์ของผู้ใช้</b> (Allow User Scripts)</li>
+                <li>ถ้าไม่เจอสวิตช์นี้ ให้ไปที่ <kbd>chrome://extensions</kbd> (Edge: <kbd>edge://extensions</kbd>) แล้วเปิด <b>โหมดนักพัฒนาซอฟต์แวร์</b> มุมขวาบนแทน</li>
+              </ol>
+            </div>
+            <div class="step-foot"><label class="check"><input type="checkbox" data-done="s2"> ทำแล้ว</label></div>
+          </article>
+
+          <article class="step" id="s3" data-step>
+            <div class="step-n">3</div>
+            <h3>ปิดสคริปต์ตัวเก่า (ถ้าเคยติดตั้ง)</h3>
+            <div class="step-body">
+              <p>SP Suite รวมสคริปต์เดิม 9 ตัวไว้แล้ว ถ้าเปิดพร้อมกันจะทำงานซ้อนกัน</p>
+              <ol>
+                <li>กดไอคอน Tampermonkey › <b>แดชบอร์ด</b></li>
+                <li>ปิดสวิตช์สคริปต์ที่ชื่อขึ้นต้นด้วย <b>Bplus -</b>, <b>Bplus AI -</b> และ <b>BPlus QA Repair Tool</b></li>
+              </ol>
+              <div class="note info">ไม่เคยติดตั้งสคริปต์เดิม ข้ามขั้นนี้ได้เลย ติ๊กว่าทำแล้วได้</div>
+            </div>
+            <div class="step-foot"><label class="check"><input type="checkbox" data-done="s3"> ทำแล้ว / ข้าม</label></div>
+          </article>
+
+          <article class="step" id="s4" data-step>
+            <div class="step-n">4</div>
+            <h3>ติดตั้ง SP Suite</h3>
+            <div class="step-body">
+              <p>กดปุ่มด้านล่าง Tampermonkey จะเปิดหน้าติดตั้งขึ้นมาเอง แล้วกด <b>ติดตั้ง</b> (Install)</p>
+              <div class="step-foot" style="margin:4px 0 10px">
+                <a class="btn btn-main" href="Bplus_SP_Suite.user.js" id="install-link">ติดตั้ง SP Suite v<span class="ver">2.1.1</span></a>
+              </div>
+              <div class="note">ถ้ากดแล้วเห็นเป็นหน้าโค้ดยาว ๆ แทนหน้าติดตั้ง แปลว่าขั้นที่ 1–2 ยังไม่เรียบร้อย กลับไปเช็คสวิตช์ <b>อนุญาตสคริปต์ของผู้ใช้</b> แล้วกดปุ่มอีกครั้ง</div>
+            </div>
+            <div class="step-foot"><label class="check"><input type="checkbox" data-done="s4"> ทำแล้ว</label></div>
+          </article>
+
+          <article class="step" id="s5" data-step>
+            <div class="step-n">5</div>
+            <h3>เปิด cloudbplusai แล้วเลือกแผนก</h3>
+            <div class="step-body">
+              <ol>
+                <li>เปิด <a href="https://cloudbplusai.bplus.co.th/" target="_blank" rel="noopener">cloudbplusai.bplus.co.th</a> แล้วล็อกอินตามปกติ (ถ้าเปิดอยู่แล้ว กด <kbd>F5</kbd> รีเฟรช)</li>
+                <li>หน้าตั้งค่าจะเด้งขึ้นเองครั้งแรก เลือกแผนก <b>ERP</b>, <b>HRM</b> หรือ <b>SE</b></li>
+                <li>เลือกบทบาท <b>หัวหน้า</b> หรือ <b>เจ้าหน้าที่</b> ระบบจะเปิด/ซ่อนเครื่องมือให้เหมาะกับงาน</li>
+                <li>มุมล่างขวาของหน้าตั้งค่าจะบอกเวอร์ชัน ต้องตรงกับปุ่มติดตั้งด้านบน</li>
+              </ol>
+            </div>
+            <div class="step-foot"><label class="check"><input type="checkbox" data-done="s5"> ทำแล้ว</label></div>
+          </article>
+
+          <div class="note info"><b>อัปเดตเวอร์ชันใหม่:</b> กลับมาหน้านี้แล้วกดปุ่ม "ติดตั้ง SP Suite" อีกครั้ง Tampermonkey จะขึ้นปุ่ม <b>อัปเดต</b> (Update) ให้ ค่าที่ตั้งไว้ยังอยู่ครบ</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PART 2: TOOLS -->
+  <section class="part" id="tools">
+    <div class="wrap">
+      <div class="part-head">
+        <div class="part-num">ส่วนที่ 2</div>
+        <h2>เครื่องมือทั้งหมด</h2>
+        <p>เลือกบทบาทของคุณ หน้านี้จะโชว์เฉพาะเครื่องมือที่คุณใช้ ทุกเครื่องมือเปิดได้จากแถบด้านบนของเว็บ ไม่ว่าจะอยู่หน้าไหน</p>
+      </div>
+
+      <div class="roles">
+        <div class="seg" role="group" aria-label="เลือกบทบาท">
+          <button type="button" data-role="all" aria-pressed="true">ทั้งหมด</button>
+          <button type="button" data-role="hd" aria-pressed="false">Helpdesk / เจ้าหน้าที่</button>
+          <button type="button" data-role="lead" aria-pressed="false">หัวหน้า</button>
+        </div>
+        <span class="hint" id="role-hint">แสดงเครื่องมือทั้ง 8 กลุ่ม</span>
+      </div>
+
+      <div class="tools">
+        <!-- helpdesk -->
+        <article class="tool" data-for="hd" style="--c:var(--qa)" id="t-qa">
+          <div class="tool-top"><span class="sw"></span><h3>QA Repair</h3><span class="chip hd">Helpdesk</span></div>
+          <div class="tool-where">ปุ่ม QA Repair บนแถบ · ใช้คู่กับหน้าแก้ไขบทความ</div>
+          <div class="tool-body">
+            <ul>
+              <li>นำเข้าบทความจากไฟล์ .md แล้วกรอกฟอร์มบทความให้อัตโนมัติ ทั้งชื่อ คำอธิบาย เนื้อหา Keywords และคำถาม</li>
+              <li>ตรวจไฟล์ก่อนซ่อมตามเกณฑ์ 15/15: คำถาม 25 ข้อ, Keywords 25 คำ, คำอธิบาย 20–120 ตัวอักษร, เนื้อหาอย่างน้อย 2,000 ตัวอักษร</li>
+              <li>ดาวน์โหลด <b>ไฟล์ตัวอย่าง</b> และ <b>คำสั่งสร้าง Skill</b> ไปให้ AI ช่วยเขียนไฟล์ .md ได้</li>
+            </ul>
+          </div>
+          <details class="how"><summary>วิธีใช้</summary><div class="in"><ol>
+            <li>เปิดหน้าแก้ไขบทความในเว็บ</li>
+            <li>กด QA Repair › เลือกไฟล์ .md › เลือกข้อที่จะซ่อม</li>
+            <li>ดูป้าย ✓/✗ ใต้พรีวิว ถ้ามี ✗ ให้แก้ไฟล์ก่อนจะดีที่สุด</li>
+            <li>ติ๊กส่วนที่จะจัดการ แล้วกด <b>ซ่อมอัตโนมัติ</b> (ล้าง → รอ 1 วินาที → กรอกใหม่)</li>
+            <li>ตรวจหน้าฟอร์มอีกรอบ แล้วกดบันทึกของเว็บเอง</li>
+          </ol></div></details>
+        </article>
+
+        <article class="tool" data-for="hd" style="--c:var(--qa)" id="t-mine">
+          <div class="tool-top"><span class="sw"></span><h3>งานของฉัน</h3><span class="chip hd">ทุกคน</span></div>
+          <div class="tool-where">อยู่ในหน้า QA Repair · แจ้งเตือนเด้งมุมซ้ายล่าง</div>
+          <div class="tool-body">
+            <ul>
+              <li>เตือนเมื่อมี Action Items ที่มอบหมายให้คุณ พร้อมปุ่มพาไปหน้ารายการแล้วเลือกชื่อคุณให้</li>
+              <li>คัดลอกตาราง Excel สรุปงานที่คุณปิดวันนี้ (ลำดับ / รหัส / เหตุผล / บันทึก / ลิงก์บทความ)</li>
+              <li><b>คิวที่ฉันรับช่วงค้างอยู่</b> พร้อมปุ่มคืน Bot ทั้งหมดของฉันในคลิกเดียว</li>
+            </ul>
+          </div>
+          <details class="how"><summary>วิธีใช้</summary><div class="in"><ol>
+            <li>กด <b>เปิดแจ้งเตือน Windows</b> ครั้งแรก แล้วกดอนุญาต จะได้เตือนแม้ไม่ได้ดูหน้าเว็บ</li>
+            <li>ระบบตรวจงานให้เองทุก 2 นาที กด <b>ตรวจงานเดี๋ยวนี้</b> ได้ตลอด</li>
+            <li>ก่อนเลิกงาน กด <b>คัดลอกตาราง Excel</b> แล้ววางในไฟล์รายงาน</li>
+            <li>ตั้งแต่ 17:00 ถ้ายังมีคิวที่รับช่วงค้าง การ์ดสีส้มจะเด้งเตือนทุก 30 นาที กด <b>คืน Bot ทั้งหมด</b> ได้จากการ์ดเลย</li>
+          </ol></div></details>
+        </article>
+
+        <article class="tool wide" data-for="hd" style="--c:#16a34a" id="t-queue">
+          <div class="tool-top"><span class="sw"></span><h3>ตัวช่วยบนหน้าคิว Handoff และประวัติลูกค้า</h3><span class="chip hd">ทุกคน</span></div>
+          <div class="tool-where">ไม่ต้องกดเปิด ทำงานเองบนหน้าเว็บ · ทุกปุ่มที่เพิ่มเข้าไปมีป้าย <span class="tag-on-site"><i>SP</i>ตัวอย่าง</span> ให้รู้ว่ามาจาก SP Suite</div>
+          <div class="tool-body">
+            <ul>
+              <li><b>ดึงชื่อไลน์ &amp; บริษัท</b> — ปุ่มข้างแท็บคิว แสดงชื่อลูกค้าและบริษัทใต้การ์ดคิว (ดึงทีละ 20 คิวล่าสุด)</li>
+              <li><b>ช่องค้นหาคิว</b> — พิมพ์ชื่อ นามสกุล บริษัท หรือรหัส Session เพื่อกรองการ์ดทันที</li>
+              <li><b>เรียงคิวตามเวลาแชทล่าสุด</b> — พร้อมป้าย "อัปเดตล่าสุด" สีส้มใต้การ์ด และดึงลึกถึง 1,000 คิว</li>
+              <li><b>ล็อกคิวตามแผนก</b> — เลือกสินค้าของแผนกในดรอปดาวน์ให้อัตโนมัติ</li>
+              <li><b>กันเด้งเข้าจอเดี่ยว</b> และ <b>กันแชทเด้งลงล่างสุด</b> ระหว่างอ่านข้อความเก่า</li>
+              <li><b>แก้ไขโปรไฟล์ลูกค้า</b> — ปุ่มแดงข้างรหัส Session เปิดหน้าประวัติลูกค้า ค้นหาชื่อ แล้วกดแก้ไขให้</li>
+              <li><b>เติมข้อมูลเริ่มต้น</b> — ปุ่มน้ำเงินในหน้าต่างแก้ไขลูกค้า เติมตำแหน่ง เบอร์ อีเมล บทบาท หมายเหตุ ตามค่าของแผนก</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- lead -->
+        <article class="tool" data-for="lead" style="--c:var(--sla)" id="t-sla">
+          <div class="tool-top"><span class="sw"></span><h3>สรุป SLA</h3><span class="chip lead">หัวหน้า</span></div>
+          <div class="tool-where">ปุ่ม สรุป SLA บนแถบ · ใช้ได้ทุกหน้า</div>
+          <div class="tool-body">
+            <ul>
+              <li>สรุปคิว LINE รายวันหรือรายเดือน แยกสินค้า ERP / POS / HRM</li>
+              <li>คิวทั้งหมด · บอทตอบจบเอง · เจ้าหน้าที่รับช่วง · คำถามที่บอทตอบไม่ได้ · Action Items ของทีม</li>
+              <li>บันทึกเป็นภาพ PNG ความคมชัดสูงสำหรับส่งสรุปงานสิ้นวัน และส่งออก CSV</li>
+              <li>ตารางเจาะลึกด้านล่างไว้พิสูจน์ที่มาของตัวเลขทุกตัว</li>
+            </ul>
+          </div>
+          <details class="how"><summary>วิธีใช้</summary><div class="in"><ol>
+            <li>กด สรุป SLA › เลือก รายวัน หรือ รายเดือน และวันที่</li>
+            <li>สินค้าถูกเลือกตามแผนกให้แล้ว เปลี่ยนได้จากดรอปดาวน์</li>
+            <li>กด <b>ดึงข้อมูล</b> รอสักครู่</li>
+            <li>กด <b>บันทึก PNG</b> แล้วส่งภาพเข้ากลุ่ม LINE</li>
+          </ol></div></details>
+        </article>
+
+        <article class="tool" data-for="lead" style="--c:var(--ovd)" id="t-ovd">
+          <div class="tool-top"><span class="sw"></span><h3>Overdue</h3><span class="chip lead">หัวหน้า</span></div>
+          <div class="tool-where">ปุ่ม Overdue บนแถบ · ตัวเลขบนปุ่ม = งานเกินกำหนดของแผนก</div>
+          <div class="tool-body">
+            <ul>
+              <li>รวม Action Items ที่เกินกำหนด จัดกลุ่มตามคน เรียงจากค้างมากไปน้อย</li>
+              <li>สีบอกความหนัก: เหลือง ≤ 2 วัน · ส้ม ≤ 7 วัน · แดง เกิน 7 วัน</li>
+              <li>คัดลอกข้อความสรุปส่งกลุ่ม LINE หรือข้อความทักรายคนพร้อมรายการงาน</li>
+            </ul>
+          </div>
+          <details class="how"><summary>วิธีใช้</summary><div class="in"><ol>
+            <li>กด Overdue › เลือกแท็บแผนก (ตั้งค่าเริ่มต้นเป็นแผนกของคุณ)</li>
+            <li>ติ๊ก <b>เฉพาะทีม Support</b> ไว้ เพื่อซ่อนงานของ RD</li>
+            <li>กด <b>คัดลอกสรุปส่ง LINE</b> แล้ววางในกลุ่ม</li>
+            <li>ทักรายคน: กดไอคอนแชทท้ายชื่อ · ดูงานในเว็บ: กดไอคอนแว่นขยาย</li>
+          </ol></div></details>
+        </article>
+
+        <article class="tool wide" data-for="lead" style="--c:var(--bot)" id="t-bot">
+          <div class="tool-top"><span class="sw"></span><h3>คืน BOT</h3><span class="chip lead">หัวหน้า</span></div>
+          <div class="tool-where">ปุ่ม คืน BOT บนแถบ · ใช้สิ้นวัน และก่อนเริ่มงานเช้าให้ Bot ทำงานเต็มที่</div>
+          <div class="tool-body">
+            <ul>
+              <li>กรองคิวตาม Product ช่วงวันที่ คำค้นหา และสถานะ (รอรับช่วง / เจ้าหน้าที่ตอบ / ทั้งสอง)</li>
+              <li>พรีวิวในตารางก่อน ติ๊กเลือกเฉพาะคิวที่ต้องการ แล้วค่อยกดยืนยัน</li>
+              <li>คืนทีละ 5 คิวพร้อมกัน มีแถบความคืบหน้า และกดหยุดกลางทางได้</li>
+            </ul>
+          </div>
+          <details class="how"><summary>วิธีใช้</summary><div class="in"><ol>
+            <li>กด คืน BOT › ตรวจ Product (เลือกตามแผนกให้แล้ว) และช่วงวันที่</li>
+            <li>เลือกสถานะคิว แล้วกด <b>ค้นหาและดูพรีวิว</b></li>
+            <li>เอาติ๊กออกจากคิวที่ยังคุยกับลูกค้าอยู่</li>
+            <li>กด <b>ยืนยันคืน Bot</b> แล้วกดตกลงในหน้าต่างยืนยัน</li>
+          </ol>
+          <div class="note">ระหว่างกำลังคืน ถ้าปิดหน้าต่าง ระบบจะถามก่อน และหยุดคิวที่เหลือให้</div></div></details>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- DAILY -->
+  <section class="part" id="day">
+    <div class="wrap">
+      <div class="part-head">
+        <h2>ใช้งานประจำวัน</h2>
+        <p>หนึ่งวันทำงานกับ SP Suite ตามบทบาทที่เลือกไว้ด้านบน</p>
+      </div>
+      <div class="day">
+        <div class="slot" style="--bar:var(--bot)">
+          <div class="time">08:30</div><div class="when">เริ่มงาน</div>
+          <ul>
+            <li data-for="lead" style="--c:var(--bot)"><span class="d"></span>คืน BOT คิวที่ค้างข้ามคืน ให้ Bot รับลูกค้าช่วงเช้าเต็มที่</li>
+            <li data-for="lead" style="--c:var(--ovd)"><span class="d"></span>เปิด Overdue ดูงานค้าง แล้วส่งสรุปเข้ากลุ่ม LINE</li>
+            <li data-for="hd" style="--c:var(--qa)"><span class="d"></span>เปิด QA Repair ดูว่ามี Action Items ที่ได้รับมอบหมายไหม</li>
+          </ul>
+        </div>
+        <div class="slot" style="--bar:#16a34a">
+          <div class="time">ระหว่างวัน</div><div class="when">ตอบลูกค้า</div>
+          <ul>
+            <li data-for="hd" style="--c:#16a34a"><span class="d"></span>หน้าคิว: กด ดึงชื่อไลน์ &amp; บริษัท แล้วใช้ช่องค้นหาคิวหาลูกค้า</li>
+            <li data-for="hd" style="--c:#16a34a"><span class="d"></span>ข้อมูลลูกค้าไม่ครบ: กดปุ่มแดง แก้ไขโปรไฟล์ → ปุ่มน้ำเงิน เติมข้อมูลเริ่มต้น</li>
+            <li data-for="all" style="--c:var(--qa)"><span class="d"></span>การ์ดเตือนเด้งมุมซ้ายล่าง = มีงานใหม่ กดเปิดได้เลย</li>
+          </ul>
+        </div>
+        <div class="slot" style="--bar:var(--qa)">
+          <div class="time">บ่าย</div><div class="when">งานบทความ</div>
+          <ul>
+            <li data-for="hd" style="--c:var(--qa)"><span class="d"></span>ให้ AI เขียนไฟล์ .md ด้วยคำสั่งสร้าง Skill แล้วนำเข้าด้วย QA Repair</li>
+            <li data-for="lead" style="--c:var(--ovd)"><span class="d"></span>ทักรายคนจาก Overdue สำหรับงานที่ค้างเกิน 7 วัน</li>
+          </ul>
+        </div>
+        <div class="slot" style="--bar:var(--sla)">
+          <div class="time">17:00</div><div class="when">ปิดวัน</div>
+          <ul>
+            <li data-for="hd" style="--c:var(--bot)"><span class="d"></span>เคลียร์คิวที่รับช่วงค้าง: กด คืน Bot ทั้งหมดของฉัน</li>
+            <li data-for="hd" style="--c:var(--ok)"><span class="d"></span>คัดลอกตาราง Excel สรุปงานที่ปิดวันนี้</li>
+            <li data-for="lead" style="--c:var(--sla)"><span class="d"></span>สรุป SLA › ดึงข้อมูล › บันทึก PNG ส่งสรุปงานสิ้นวัน</li>
+            <li data-for="lead" style="--c:var(--bot)"><span class="d"></span>คืน BOT คิวที่จบแล้วของทั้งทีม</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="part" id="settings">
+    <div class="wrap">
+      <div class="part-head">
+        <h2>การตั้งค่า</h2>
+        <p>กดไอคอนตั้งค่าบนแถบ ทุกค่าบันทึกทันทีในเบราว์เซอร์เครื่องนั้น ไม่ต้องกดบันทึก</p>
+      </div>
+      <div class="set-grid">
+        <div class="panel">
+          <h3>แผนกกำหนดค่าเริ่มต้นให้ทุกเครื่องมือ</h3>
+          <p style="color:var(--ink-2)">กดเลือกแผนกเพื่อดูค่าที่ระบบตั้งให้</p>
+          <div class="dept-pick" role="group" aria-label="แผนก">
+            <button type="button" data-dept="ERP" aria-pressed="true">ERP<small>Support ERP</small></button>
+            <button type="button" data-dept="HRM" aria-pressed="false">HRM<small>Support HRM</small></button>
+            <button type="button" data-dept="SE" aria-pressed="false">SE<small>Support SE</small></button>
+          </div>
+          <table class="kv" id="dept-table"></table>
+          <p style="color:var(--ink-3);font-size:14px;margin-top:12px">แก้ได้ทุกค่าที่ ตั้งค่า › ข้อ 5 · กด <b>คืนค่าแผนก</b> เพื่อกลับเป็นค่าตั้งต้น</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div class="panel">
+            <h3>บทบาท</h3>
+            <ul class="list-plain">
+              <li><b>หัวหน้า</b> — เปิดทุกเครื่องมือ</li>
+              <li><b>เจ้าหน้าที่</b> — ซ่อน สรุป SLA, Overdue และ คืน BOT ให้แถบโล่ง (เปิดคืนรายตัวได้ในข้อ 3)</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>ธีมและตำแหน่ง</h3>
+            <ul class="list-plain">
+              <li>ธีม <b>สว่าง / มืด</b> — สลับเร็วด้วยไอคอนพระจันทร์/พระอาทิตย์บนแถบ</li>
+              <li>สีประจำแผนก หรือเลือกเองจาก 6 สี / กำหนดสีเอง</li>
+              <li>แถบฝังใน header หรือลอยมุมล่างขวา</li>
+            </ul>
+            <div class="swatches" aria-hidden="true"><span style="background:#C6F432"></span><span style="background:#4FD1FF"></span><span style="background:#FF7EB6"></span><span style="background:#FFB547"></span><span style="background:#A78BFA"></span><span style="background:#34E3A4"></span></div>
+          </div>
+          <div class="panel">
+            <h3>อื่น ๆ</h3>
+            <ul class="list-plain">
+              <li>เปิด/ปิดเครื่องมือและตัวช่วยบนหน้าเว็บได้ทีละตัว มีผลทันที</li>
+              <li>เวลาเริ่มเตือนคืน Bot ของฉัน (ค่าเริ่มต้น 17:00) มีปุ่ม <b>ทดลองเตือน</b></li>
+              <li>ซ่อนปุ่มลอยของสคริปต์เดิม เผื่อยังไม่ได้ปิดตัวเก่า</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="part" id="faq">
+    <div class="wrap">
+      <div class="part-head"><h2>แก้ปัญหาที่พบบ่อย</h2></div>
+      <div class="faq">
+        <details><summary>ไม่เห็นแถบ SP บนหัวเว็บ</summary><div class="in">
+          <ol class="list-plain">
+            <li>กดไอคอน Tampermonkey บนหน้า cloudbplusai ต้องเห็น <b>Bplus SP Suite</b> และสวิตช์เปิดอยู่</li>
+            <li>ถ้าไม่มีชื่อสคริปต์ขึ้นเลย ให้เช็คสวิตช์ <b>อนุญาตสคริปต์ของผู้ใช้</b> ในขั้นที่ 2</li>
+            <li>กด <kbd>Ctrl</kbd> + <kbd>F5</kbd> รีเฟรชหน้าเว็บ</li>
+            <li>จอแคบ แถบอาจถูกย่อ ลองเปลี่ยนเป็น "ลอยมุมล่างขวา" ในตั้งค่า</li>
+          </ol></div></details>
+        <details><summary>กดปุ่มบนแถบแล้วหน้าต่างไม่ขึ้น</summary><div class="in">
+          <p>มักเป็นเวอร์ชันเก่าค้างอยู่ เปิดหน้าตั้งค่าไม่ได้ก็ดูได้จากแดชบอร์ด Tampermonkey (คอลัมน์เวอร์ชัน) ให้ตรงกับปุ่มติดตั้งในหน้านี้ ถ้าไม่ตรงให้กดติดตั้งซ้ำเพื่ออัปเดต</p></div></details>
+        <details><summary>มีปุ่มหรือแจ้งเตือนซ้ำ 2 ชุด</summary><div class="in">
+          <p>สคริปต์ตัวเก่ายังเปิดอยู่ ทำขั้นที่ 3 อีกครั้ง หน้ารวมของ SP Suite จะขึ้นกรอบเตือนถ้ายังเจอสคริปต์เดิม</p></div></details>
+        <details><summary>ขึ้นว่า "ไม่พบ Token" หรือไม่มีตัวเลขบนแถบ</summary><div class="in">
+          <p>ล็อกอินเว็บใหม่ หรือกดเมนูใดก็ได้ในเว็บ 1 ครั้งให้ระบบโหลดข้อมูล แล้วกดรีเฟรชในเครื่องมือนั้น</p></div></details>
+        <details><summary>QA Repair กรอกฟอร์มไม่ครบ</summary><div class="in">
+          <p>ดูป้าย ✓/✗ ใต้พรีวิว และเทียบไฟล์กับ <b>ไฟล์ตัวอย่าง</b> หัวข้อตัวหนาต้องพิมพ์ตรงตัว เช่น <b>**ชื่อบทความ:**</b> และเนื้อหาต้องอยู่ในบล็อก ``` เสมอ</p></div></details>
+        <details><summary>ค่าที่ตั้งไว้หายตอนเปลี่ยนเครื่อง</summary><div class="in">
+          <p>ค่าตั้งเก็บในเบราว์เซอร์ของแต่ละเครื่อง เครื่องใหม่ต้องเลือกแผนกและตั้งค่าใหม่ 1 ครั้ง</p></div></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>SP Suite v<span class="ver">2.1.1</span> · ทีม Support Bplus</span>
+    <span>ใช้กับ cloudbplusai.bplus.co.th เท่านั้น</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const store = {
+    get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
+    set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+  };
+
+  /* ---------- hero: live dock demo ---------- */
+  const DEMO = {
+    home:{c:'var(--lime)',t:'หน้ารวม',who:['ทุกคน'],li:['ตัวเลขงานค้างของคุณและของแผนกในที่เดียว','ทางลัดไปทุกเครื่องมือ','บอกว่าตัวช่วยไหนเปิดอยู่ และเตือนถ้ายังเปิดสคริปต์เก่าค้างไว้'],go:'#tools'},
+    sla:{c:'var(--sla-dot)',t:'สรุป SLA',who:['หัวหน้า'],li:['สรุปคิว LINE รายวัน/รายเดือน','บันทึก PNG ส่งสรุปงานสิ้นวัน','ตารางพิสูจน์ตัวเลข + ส่งออก CSV'],go:'#t-sla'},
+    overdue:{c:'var(--ovd-dot)',t:'Overdue',who:['หัวหน้า'],li:['งานเกินกำหนดจัดกลุ่มตามคน','คัดลอกข้อความทวงงานส่ง LINE','ตัวเลขบนปุ่ม = งานค้างของแผนก'],go:'#t-ovd'},
+    bot:{c:'var(--bot-dot)',t:'คืน BOT',who:['หัวหน้า'],li:['กรองคิวแล้วพรีวิวก่อนคืน','ติ๊กเลือกเฉพาะคิวที่ต้องการ','กดหยุดกลางทางได้'],go:'#t-bot'},
+    qa:{c:'var(--qa-dot)',t:'QA Repair',who:['Helpdesk','ทุกคน'],li:['นำเข้าบทความจากไฟล์ .md','เตือนงานของฉัน + คิวที่รับช่วงค้าง','คัดลอกตาราง Excel งานที่ปิดวันนี้'],go:'#t-qa'},
+    theme:{c:'#E4E4E7',t:'สลับธีม',who:['ทุกคน'],li:['สลับธีมสว่าง / มืดในคลิกเดียว','สีของแถบเปลี่ยนตามแผนก หรือเลือกเองได้'],go:'#settings'},
+    settings:{c:'#E4E4E7',t:'ตั้งค่า',who:['ทุกคน'],li:['เลือกแผนก ERP / HRM / SE และบทบาท','เปิด/ปิดเครื่องมือทีละตัว','เวลาเตือนคืน Bot ของฉัน'],go:'#settings'}
+  };
+  const drawer = document.getElementById('demo-drawer');
+  const dockBtns = document.querySelectorAll('[data-demo]');
+  function showDemo(id){
+    const d = DEMO[id];
+    dockBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.demo === id)));
+    drawer.style.setProperty('--c', d.c);
+    drawer.innerHTML = '<h3></h3><div class="who"></div><ul></ul><a class="go" href="'+d.go+'">อ่านวิธีใช้</a>';
+    drawer.querySelector('h3').textContent = d.t;
+    d.who.forEach(w => { const s=document.createElement('span'); s.className='chip '+(w==='หัวหน้า'?'lead':(w==='Helpdesk'?'hd':'')); s.textContent=w; drawer.querySelector('.who').appendChild(s); });
+    d.li.forEach(x => { const li=document.createElement('li'); li.textContent=x; drawer.querySelector('ul').appendChild(li); });
+  }
+  dockBtns.forEach(b => b.addEventListener('click', () => showDemo(b.dataset.demo)));
+  showDemo('qa');
+
+  /* ---------- install progress ---------- */
+  const steps = Array.from(document.querySelectorAll('[data-step]'));
+  const done = store.get('sp_guide_done') || {};
+  const mini = document.getElementById('mini-steps');
+  steps.forEach(s => {
+    const li = document.createElement('li');
+    li.dataset.id = s.id;
+    li.innerHTML = '<a href="#'+s.id+'"><span class="tick" aria-hidden="true">✓</span><span></span></a>';
+    li.querySelector('span:last-child').textContent = s.querySelector('h3').textContent;
+    mini.appendChild(li);
+  });
+  function paint(){
+    let n = 0;
+    steps.forEach(s => {
+      const on = !!done[s.id];
+      if (on) n++;
+      s.classList.toggle('done', on);
+      s.querySelector('[data-done]').checked = on;
+      mini.querySelector('[data-id="'+s.id+'"]').classList.toggle('done', on);
+    });
+    document.getElementById('meter-fill').style.width = (n / steps.length * 100) + '%';
+    document.querySelector('.meter').setAttribute('aria-valuenow', n);
+    document.getElementById('meter-text').textContent = n === 0 ? 'ยังไม่ได้เริ่ม' : (n === steps.length ? 'ติดตั้งครบแล้ว พร้อมใช้งาน' : 'ทำแล้ว ' + n + ' จาก ' + steps.length + ' ขั้น');
+  }
+  document.querySelectorAll('[data-done]').forEach(cb => cb.addEventListener('change', () => {
+    done[cb.dataset.done] = cb.checked; store.set('sp_guide_done', done); paint();
+  }));
+  document.getElementById('install-link').addEventListener('click', () => {
+    done.s4 = true; store.set('sp_guide_done', done); setTimeout(paint, 300);
+  });
+  paint();
+
+  /* browser tabs */
+  const btabs = document.querySelectorAll('[data-browser]');
+  btabs.forEach(b => b.addEventListener('click', () => {
+    btabs.forEach(x => x.setAttribute('aria-selected', String(x === b)));
+    document.querySelectorAll('[data-browser-panel]').forEach(p => p.hidden = p.dataset.browserPanel !== b.dataset.browser);
+  }));
+  if (/Edg\//.test(navigator.userAgent)) document.querySelector('[data-browser="edge"]').click();
+
+  /* ---------- role filter ---------- */
+  const HINT = { all:'แสดงเครื่องมือทั้งหมด', hd:'เฉพาะที่ Helpdesk / เจ้าหน้าที่ใช้ประจำ', lead:'เฉพาะเครื่องมือของหัวหน้า (หัวหน้าใช้ของ Helpdesk ได้ด้วย)' };
+  function setRole(r){
+    document.querySelectorAll('[data-role]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.role === r)));
+    document.querySelectorAll('[data-for]').forEach(el => {
+      const f = el.dataset.for;
+      el.hidden = !(r === 'all' || f === 'all' || f === r);
+    });
+    document.getElementById('role-hint').textContent = HINT[r];
+    store.set('sp_guide_role', r);
+  }
+  document.querySelectorAll('[data-role]').forEach(b => b.addEventListener('click', () => setRole(b.dataset.role)));
+  setRole(store.get('sp_guide_role') || 'all');
+
+  /* ---------- dept table ---------- */
+  const DEPT = {
+    ERP:[['สินค้าในสรุป SLA','Bplus ERP'],['แท็บเริ่มต้นของ Overdue','ERP'],['Product ในคืน BOT','Bplus ERP'],['ล็อกคิว Handoff','productId 1 · Bplus ERP'],['เติมโปรไฟล์: ตำแหน่ง / บทบาท','บัญชี / บัญชี'],['สีแถบ','<span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#C6F432;vertical-align:-2px"></span> Neon Lime']],
+    HRM:[['สินค้าในสรุป SLA','Bplus HRM'],['แท็บเริ่มต้นของ Overdue','HRM'],['Product ในคืน BOT','Bplus HRM'],['ล็อกคิว Handoff','productId 3 · Bplus HRM'],['เติมโปรไฟล์: ตำแหน่ง / บทบาท','ฝ่ายบุคคล / ฝ่ายบุคคล'],['สีแถบ','<span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#FF7EB6;vertical-align:-2px"></span> Hot Rose']],
+    SE:[['สินค้าในสรุป SLA','Bplus POS'],['แท็บเริ่มต้นของ Overdue','SE'],['Product ในคืน BOT','Bplus POS'],['ล็อกคิว Handoff','productId 2 · Bplus POS'],['เติมโปรไฟล์: ตำแหน่ง / บทบาท','เจ้าของร้าน / เจ้าของร้าน'],['สีแถบ','<span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#4FD1FF;vertical-align:-2px"></span> Ice Cyan']]
+  };
+  function setDept(d){
+    document.querySelectorAll('[data-dept]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.dept === d)));
+    document.getElementById('dept-table').innerHTML = DEPT[d].map(r => '<tr><th scope="row">'+r[0]+'</th><td>'+r[1]+'</td></tr>').join('');
+    document.querySelector('.dock .sp').textContent = 'SP·' + d;
+  }
+  document.querySelectorAll('[data-dept]').forEach(b => b.addEventListener('click', () => setDept(b.dataset.dept)));
+  setDept('ERP');
+
+  /* ---------- nav highlight ---------- */
+  const links = document.querySelectorAll('.nav a');
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id)); });
+  }, { rootMargin: '-45% 0px -50% 0px' }) : null;
+  if (io) ['install','tools','day','settings','faq'].forEach(id => io.observe(document.getElementById(id)));
+})();
+</script>
+</body>
+</html>
